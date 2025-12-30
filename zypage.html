@@ -38,6 +38,17 @@
             z-index: 5;
         }
 
+        /* Container cho PlayerDuo notify overlay */
+        .playerduo-notify-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            z-index: 15;
+        }
+
         iframe {
             width: 100%;
             height: 100%;
@@ -45,15 +56,25 @@
             background-color: transparent;
         }
 
-        /* Style cho container để dễ nhìn khi test */
-        .donate-notify-container,
-        .leaderboard-container {
+        /* Fade animation */
+        .fade {
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .fade.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .leaderboard-container,
+        .leaderboard-container iframe {
             border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <!-- Donate Notify ở giữa màn hình -->
+    <!-- Zypage Donate Notify ở giữa màn hình -->
     <div class="donate-notify-container">
         <iframe 
             src="https://zypage.com/donate-message/ca32421f326ace4afa951816a4984b426c82ae81"
@@ -62,13 +83,61 @@
         </iframe>
     </div>
 
-    <!-- Bảng xếp hạng ở góc phải -->
-    <div class="leaderboard-container">
+    <!-- PlayerDuo Donate Notify Overlay ở giữa màn hình -->
+    <div class="playerduo-notify-container">
+        <iframe 
+            src="https://playerduo.net/streaming/loop?code=68b51aa61eb96&user_id=2722735"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <!-- Bảng xếp hạng ở góc phải (Zypage) -->
+    <div class="leaderboard-container fade" id="zypage-leaderboard">
         <iframe 
             src="https://zypage.com/donate-top/ca32421f326ace4afa951816a4984b426c82ae81?type=text&time=all&limit=10&amount=yes"
             allowtransparency="true"
             scrolling="no">
         </iframe>
     </div>
+
+    <!-- Bảng xếp hạng ở góc phải (PlayerDuo) -->
+    <div class="leaderboard-container fade hidden" id="playerduo-leaderboard">
+        <iframe 
+            src="https://playerduo.net/streaming/rank?rank=3&type=2&user_id=2722735"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <script>
+        // Thay phiên hiển thị bảng xếp hạng mỗi 120 giây
+        const zypage = document.getElementById('zypage-leaderboard');
+        const playerduo = document.getElementById('playerduo-leaderboard');
+        
+        let showingZypage = true;
+
+        function switchLeaderboard() {
+            if (showingZypage) {
+                // Fade out Zypage
+                zypage.classList.add('hidden');
+                // Fade in PlayerDuo
+                setTimeout(() => {
+                    playerduo.classList.remove('hidden');
+                }, 1000);
+            } else {
+                // Fade out PlayerDuo
+                playerduo.classList.add('hidden');
+                // Fade in Zypage
+                setTimeout(() => {
+                    zypage.classList.remove('hidden');
+                }, 1000);
+            }
+            showingZypage = !showingZypage;
+        }
+
+        // Chuyển đổi mỗi 120 giây (2 phút)
+        setInterval(switchLeaderboard, 120000);
+    </script>
 </body>
 </html>
