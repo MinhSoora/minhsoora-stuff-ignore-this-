@@ -33,8 +33,8 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 350px;
-            height: 500px;
+            width: 380px;
+            height: 600px;
             z-index: 5;
         }
 
@@ -47,6 +47,16 @@
             width: 600px;
             height: 400px;
             z-index: 15;
+        }
+
+        /* StreamElements overlay - full màn hình */
+        .streamelements-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
         }
 
         iframe {
@@ -74,6 +84,15 @@
     </style>
 </head>
 <body>
+    <!-- StreamElements Overlay - Full màn hình (layer thấp nhất) -->
+    <div class="streamelements-container">
+        <iframe 
+            src="https://streamelements.com/overlay/6911e12e6c88d2e428666b45/ifLEBz50r5edovnS4ReIqZa6fPbCmj5V8fkNBUARFYNmRYpF"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
     <!-- Zypage Donate Notify ở giữa màn hình -->
     <div class="donate-notify-container">
         <iframe 
