@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Việt Nam</title>
+    <style>
+        @font-face {
+            font-family: 'BolderFont';
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2') format('woff2');
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            font-family: Impact, 'Arial Black', sans-serif;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 8rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-align: center;
+            text-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.8),
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000,
+                -3px -3px 0 #000,
+                3px -3px 0 #000,
+                -3px 3px 0 #000,
+                3px 3px 0 #000;
+            margin-bottom: 25px;
+            letter-spacing: 15px;
+            transform: scaleX(1.5);
+        }
+
+        .subtitle {
+            font-size: 2rem;
+            color: #f0f0f0;
+            text-align: center;
+            font-weight: 700;
+            text-shadow: 
+                3px 3px 6px rgba(0, 0, 0, 0.9),
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
+            letter-spacing: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 4rem;
+                letter-spacing: 8px;
+            }
+            .subtitle {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">HAPPY NEW YEAR 2026</h1>
+    <p class="subtitle" id="date"></p>
+    
+    <!-- Audio tự động phát -->
+    <audio id="bgMusic" autoplay loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Hiển thị ngày tháng năm hiện tại
+        function updateDate() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            document.getElementById('date').textContent = `Việt Nam | ${day}/${month}/${year}`;
+        }
+
+        // Xử lý autoplay cho các trình duyệt hiện đại
+        const audio = document.getElementById('bgMusic');
+        
+        // Thử phát nhạc khi trang load
+        audio.play().catch(function(error) {
+            console.log('Autoplay bị chặn. Nhấp vào trang để phát nhạc.');
+            // Nếu autoplay bị chặn, phát khi user tương tác
+            document.body.addEventListener('click', function() {
+                audio.play();
+            }, { once: true });
+        });
+
+        updateDate();
+    </script>
+</body>
+</html>
