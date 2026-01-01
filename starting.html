@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Việt Nam</title>
+    <title>Trang Tiêu Đề</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=BBH+Hegarty&display=swap" rel="stylesheet">
     <style>
-        @font-face {
-            font-family: 'BolderFont';
-            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2') format('woff2');
-            font-weight: 900;
-            font-style: normal;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -19,68 +15,76 @@
         }
 
         body {
-            min-height: 100vh;
+            font-family: 'Archivo Black', sans-serif;
+            background: transparent;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: transparent;
-            font-family: Impact, 'Arial Black', sans-serif;
-            padding: 20px;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
-        .title {
-            font-size: 8rem;
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 5rem;
             font-weight: 900;
             color: #ffffff;
-            text-align: center;
             text-shadow: 
-                4px 4px 8px rgba(0, 0, 0, 0.8),
-                -2px -2px 0 #000,
-                2px -2px 0 #000,
-                -2px 2px 0 #000,
-                2px 2px 0 #000,
-                -3px -3px 0 #000,
-                3px -3px 0 #000,
-                -3px 3px 0 #000,
-                3px 3px 0 #000;
-            margin-bottom: 25px;
-            letter-spacing: 15px;
-            transform: scaleX(1.5);
+                0 0 10px rgba(255, 255, 255, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.6),
+                0 0 30px rgba(255, 255, 255, 0.4),
+                3px 3px 6px rgba(0, 0, 0, 0.5);
+            -webkit-text-stroke: 2px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 
+                    0 0 10px rgba(255, 255, 255, 0.8),
+                    0 0 20px rgba(255, 255, 255, 0.6),
+                    0 0 30px rgba(255, 255, 255, 0.4),
+                    3px 3px 6px rgba(0, 0, 0, 0.5);
+            }
+            to {
+                text-shadow: 
+                    0 0 20px rgba(255, 255, 255, 1),
+                    0 0 30px rgba(255, 255, 255, 0.8),
+                    0 0 40px rgba(255, 255, 255, 0.6),
+                    3px 3px 6px rgba(0, 0, 0, 0.5);
+            }
         }
 
         .subtitle {
-            font-size: 2rem;
-            color: #f0f0f0;
-            text-align: center;
-            font-weight: 700;
-            text-shadow: 
-                3px 3px 6px rgba(0, 0, 0, 0.9),
-                -1px -1px 0 #000,
-                1px -1px 0 #000,
-                -1px 1px 0 #000,
-                1px 1px 0 #000;
-            letter-spacing: 3px;
+            font-family: 'BBH Hegarty', sans-serif;
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         @media (max-width: 768px) {
-            .title {
-                font-size: 4rem;
-                letter-spacing: 8px;
+            h1 {
+                font-size: 3rem;
             }
             .subtitle {
-                font-size: 1.5rem;
+                font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <h1 class="title">HAPPY NEW YEAR 2026</h1>
-    <p class="subtitle" id="date"></p>
-    
-    <!-- Audio tự động phát -->
-    <audio id="bgMusic" autoplay loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    <div class="container">
+        <h1>HAPPY NEW YEAR</h1>
+        <p class="subtitle" id="date-info">Vietnam | <span id="current-date"></span></p>
+    </div>
+
+    <audio id="background-music" autoplay loop>
+        <source src="music.mp3" type="audio/mpeg">
+        Trình duyệt của bạn không hỗ trợ phát âm thanh.
     </audio>
 
     <script>
@@ -90,23 +94,22 @@
             const day = String(now.getDate()).padStart(2, '0');
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const year = now.getFullYear();
-            
-            document.getElementById('date').textContent = `Việt Nam | ${day}/${month}/${year}`;
+            document.getElementById('current-date').textContent = `${day}/${month}/${year}`;
         }
 
-        // Xử lý autoplay cho các trình duyệt hiện đại
-        const audio = document.getElementById('bgMusic');
+        updateDate();
+
+        // Xử lý autoplay cho trình duyệt hiện đại
+        const audio = document.getElementById('background-music');
         
         // Thử phát nhạc khi trang load
-        audio.play().catch(function(error) {
-            console.log('Autoplay bị chặn. Nhấp vào trang để phát nhạc.');
-            // Nếu autoplay bị chặn, phát khi user tương tác
-            document.body.addEventListener('click', function() {
+        audio.play().catch(e => {
+            console.log('Autoplay bị chặn, cần tương tác từ người dùng');
+            // Thêm event listener để phát khi người dùng click vào trang
+            document.body.addEventListener('click', () => {
                 audio.play();
             }, { once: true });
         });
-
-        updateDate();
     </script>
 </body>
 </html>
