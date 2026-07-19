@@ -2,127 +2,103 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GPS Speed Overlay</title>
+<title>GPS Speed</title>
+
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent; /* nen trong suot, dung lam overlay (vd OBS Browser Source) */
-    overflow: hidden;
-    font-family: Arial, Helvetica, sans-serif;
-  }
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    background:transparent;
+    overflow:hidden;
+    font-family:Arial,sans-serif;
+}
 
-  #speed-box {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;
-    font-size: 48px;
-    font-weight: 900;
-    color: #ffffff;
-    letter-spacing: 1px;
-    -webkit-text-stroke: 2px #000000;
-    text-shadow:
-      -2px -2px 0 #000,
-       2px -2px 0 #000,
-      -2px  2px 0 #000,
-       2px  2px 0 #000,
-       0    0   6px rgba(0,0,0,0.6);
-    user-select: none;
-    pointer-events: none;
-    white-space: nowrap;
-  }
+#speed{
+    position:fixed;
+    right:30px;
+    bottom:25px;
+    color:#fff;
+    text-align:center;
+    user-select:none;
+}
 
-  #status {
-    position: fixed;
-    left: 12px;
-    top: 12px;
-    font-size: 14px;
-    color: #fff;
-    -webkit-text-stroke: 1px #000;
-    text-shadow: 0 0 4px rgba(0,0,0,0.7);
-    user-select: none;
-    pointer-events: none;
-    opacity: 0.85;
-  }
+#value{
+    font-size:92px;
+    font-weight:700;
+    line-height:.9;
+}
+
+#unit{
+    font-size:34px;
+    font-weight:700;
+}
 </style>
 </head>
+
 <body>
 
-<div id="status">Dang cho GPS...</div>
-<div id="speed-box">-- KM/H</div>
+<div id="speed">
+    <div id="value">0</div>
+    <div id="unit">KM/H</div>
+</div>
 
 <script>
-  // ============ Cau hinh ============
-  const SMOOTHING = true;        // true = lam min toc do (trung binh truot nhe) cho do khong nhay so
-  const SMOOTH_ALPHA = 0.4;      // he so lam min (0-1), cang nho cang muot nhung cang tre
-  const STALE_TIMEOUT_MS = 8000; // neu qua lau khong co fix moi -> bao "mat GPS"
+const value = document.getElementById("value");
 
-  const speedBox = document.getElementById('speed-box');
-  const statusBox = document.getElementById('status');
+let lastPosition = null;
+let lastSpeed = -1;
 
-  let smoothedKmh = null;
-  let lastFixTime = 0;
-  let watchId = null;
+const R = 6371000;
+const PI = Math.PI / 180;
 
-  function formatKmh(v) {
-    return v.toFixed(0) + ' KM/H';
-  }
+function distance(a,b,c,d){
+    const dLat = (c-a)*PI;
+    const dLon = (d-b)*PI;
 
-  function updateDisplay(kmh) {
-    speedBox.textContent = formatKmh(kmh);
-  }
+    const s =
+        Math.sin(dLat/2)**2 +
+        Math.cos(a*PI) *
+        Math.cos(c*PI) *
+        Math.sin(dLon/2)**2;
 
-  function onPosition(pos) {
-    lastFixTime = Date.now();
-    statusBox.textContent = 'GPS OK (do chinh xac ~' + Math.round(pos.coords.accuracy || 0) + 'm)';
+    return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+}
 
-    // coords.speed la m/s do truc tiep tu GPS (co the null neu thiet bi/khu vuc khong ho tro)
-    let speedMs = pos.coords.speed;
-    if (speedMs === null || speedMs === undefined || speedMs < 0) {
-      // khong co du lieu toc do truc tiep -> hien 0 thay vi bao loi, cho toi khi co fix ke tiep
-      speedMs = 0;
+navigator.geolocation.watchPosition(pos=>{
+
+    let kmh = 0;
+
+    if(pos.coords.speed != null){
+        kmh = pos.coords.speed * 3.6;
+    }else if(lastPosition){
+
+        const d = distance(
+            lastPosition.coords.latitude,
+            lastPosition.coords.longitude,
+            pos.coords.latitude,
+            pos.coords.longitude
+        );
+
+        const dt = (pos.timestamp - lastPosition.timestamp) / 1000;
+
+        if(dt>0) kmh = d / dt * 3.6;
     }
 
-    let kmh = speedMs * 3.6;
+    lastPosition = pos;
 
-    if (SMOOTHING) {
-      smoothedKmh = smoothedKmh === null ? kmh : (SMOOTH_ALPHA * kmh + (1 - SMOOTH_ALPHA) * smoothedKmh);
-      updateDisplay(smoothedKmh);
-    } else {
-      updateDisplay(kmh);
+    const speed = kmh < 1 ? 0 : Math.round(kmh);
+
+    if(speed !== lastSpeed){
+        lastSpeed = speed;
+        value.textContent = speed;
     }
-  }
 
-  function onError(err) {
-    statusBox.textContent = 'Loi GPS: ' + err.message;
-  }
-
-  function startTracking() {
-    if (!('geolocation' in navigator)) {
-      statusBox.textContent = 'Trinh duyet khong ho tro Geolocation';
-      return;
-    }
-    watchId = navigator.geolocation.watchPosition(onPosition, onError, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
-    });
-  }
-
-  // Kiem tra "mat tin hieu" GPS dinh ky
-  setInterval(() => {
-    if (lastFixTime && Date.now() - lastFixTime > STALE_TIMEOUT_MS) {
-      statusBox.textContent = 'Mat tin hieu GPS...';
-    }
-  }, 2000);
-
-  startTracking();
-
-  // Neu trang nay duoc load lai / bi an di (vd chuyen tab trong webview), Geolocation watch
-  // van tiep tuc chay ngam, khong can lam gi them.
+},console.error,{
+    enableHighAccuracy:true,
+    maximumAge:0,
+    timeout:5000
+});
 </script>
 
 </body>
