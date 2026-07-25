@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Soki Tournament OBS Overlay Background</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #ffe6f0;
+  }
+
+  .bg-wrap {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.5), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(255,255,255,0.5), transparent 40%),
+      linear-gradient(135deg, #ffd6e8 0%, #ffffff 50%, #ffc2dd 100%);
+  }
+
+  /* Lớp pattern chữ chéo kiểu Twitch */
+  .pattern-layer {
+    position: fixed;
+    inset: -20%;
+    width: 140%;
+    height: 140%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    transform: rotate(-18deg);
+    transform-origin: center;
+    pointer-events: none;
+  }
+
+  .pattern-row {
+    display: flex;
+    white-space: nowrap;
+    animation: scrollRow linear infinite;
+  }
+
+  .pattern-row span {
+    font-family: 'Arial Black', 'Segoe UI Black', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 46px;
+    letter-spacing: 4px;
+    color: rgba(255,105,170,0.18);
+    padding: 0 40px;
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  /* xen kẽ hướng chạy để giống hiệu ứng Twitch (tuỳ chọn, so le nhẹ) */
+  .pattern-row:nth-child(even) { opacity: 0.85; }
+
+  @keyframes scrollRow {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* Viền/vignette nhẹ để nền không bị phẳng */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(255,150,190,0.35) 100%);
+    pointer-events: none;
+  }
+
+  /* Vùng nội dung ở giữa để trong suốt (nơi đặt webcam/scene trong OBS) */
+  .content-safe-area {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hai thanh trên cùng và dưới cùng */
+  .bar {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: linear-gradient(90deg, #ff8fc0, #ff5fa2);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(255,120,180,0.5);
+  }
+
+  .bar-top { top: 0; }
+  .bar-bottom { bottom: 0; }
+
+  .bar-track {
+    display: flex;
+    white-space: nowrap;
+    animation: barScroll linear infinite;
+    animation-duration: 40s;
+  }
+
+  .bar-bottom .bar-track { animation-direction: reverse; }
+
+  .bar-track span {
+    font-family: 'Arial Black', 'Segoe UI Black', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 3px;
+    color: #ffffff;
+    padding: 0 40px;
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  @keyframes barScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-wrap"></div>
+
+  <div class="pattern-layer" id="patternLayer"></div>
+
+  <div class="vignette"></div>
+
+  <div class="content-safe-area"></div>
+
+  <div class="bar bar-top">
+    <div class="bar-track" id="barTop"></div>
+  </div>
+
+  <div class="bar bar-bottom">
+    <div class="bar-track" id="barBottom"></div>
+  </div>
+
+<script>
+  // Tạo nhiều hàng chữ "SOKI TOURNAMENT" lặp lại, chạy chéo giống Twitch
+  const layer = document.getElementById('patternLayer');
+  const rows = 14;              // số hàng chữ
+  const repeatPerRow = 14;      // số lần lặp chữ trong 1 hàng
+  const speeds = [140, 160, 130, 150]; // tốc độ (giây) luân phiên cho các hàng
+
+  for (let r = 0; r < rows; r++) {
+    const row = document.createElement('div');
+    row.className = 'pattern-row';
+
+    // đảo chiều chạy xen kẽ để tạo cảm giác động, giống hiệu ứng nền Twitch
+    const direction = r % 2 === 0 ? 'normal' : 'reverse';
+    const duration = speeds[r % speeds.length];
+    row.style.animationDuration = duration + 's';
+    row.style.animationDirection = direction;
+
+    let text = '';
+    for (let i = 0; i < repeatPerRow; i++) {
+      text += '<span>Soki Tournament</span>';
+    }
+    // nhân đôi nội dung để loop mượt (translateX -50%)
+    row.innerHTML = text + text;
+    layer.appendChild(row);
+  }
+
+  // Tạo chữ chạy trong 2 thanh trên/dưới
+  function fillBar(id, repeat) {
+    const el = document.getElementById(id);
+    let text = '';
+    for (let i = 0; i < repeat; i++) {
+      text += '<span>Soki Tournament</span>';
+    }
+    el.innerHTML = text + text;
+  }
+  fillBar('barTop', 12);
+  fillBar('barBottom', 12);
+</script>
+
+</body>
+</html>
