@@ -202,102 +202,153 @@
     display:flex;
     justify-content:center;
     margin-bottom:20px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:6px;
   }
   #previewBox{
     width:100%;
-    max-width:480px;
+  }
+  .preview-hint{
+    text-align:center;
+    font-size:0.75rem;
+    color:#90a4ae;
+    margin:-10px 0 12px;
   }
 
-  /* ===== Export card style ===== */
+  /* ===== Export card style (table layout) ===== */
   #exportCard{
     background:#ffffff;
-    padding:20px 16px 24px;
-    width:420px;
+    padding:22px 20px 26px;
+    width:720px;
     font-family:"Segoe UI", Roboto, Arial, sans-serif;
     color:#263238;
   }
   #exportCard .title{
     text-align:center;
-    font-size:1.5rem;
-    font-weight:800;
-    color:#283593;
-    letter-spacing:1px;
+    font-size:1.9rem;
+    font-weight:900;
+    color:#1a237e;
+    letter-spacing:2px;
     margin-bottom:2px;
   }
   #exportCard .subtitle{
     text-align:center;
-    font-size:0.9rem;
-    color:#607d8b;
-    margin-bottom:14px;
-  }
-  #exportCard .exp-day{
-    border-radius:12px;
-    margin-bottom:10px;
-    padding:10px 12px;
-    border:1px solid rgba(0,0,0,0.06);
-  }
-  #exportCard .exp-day.off{
-    background:#f1f1f1 !important;
-    text-align:center;
-    color:#90a4ae;
-    font-style:italic;
-    padding:10px;
-  }
-  #exportCard .exp-day-head{
-    font-weight:800;
     font-size:1rem;
-    margin-bottom:6px;
+    color:#546e7a;
+    margin-bottom:16px;
+    font-weight:600;
   }
-  #exportCard .exp-session{
-    display:flex;
-    align-items:flex-start;
-    gap:6px;
-    font-size:0.83rem;
-    margin-bottom:4px;
+  #exportCard table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 6px;
   }
-  #exportCard .exp-label{
-    flex:0 0 52px;
-    color:#455a64;
-    font-weight:700;
+  #exportCard thead th{
+    background:#1a237e;
+    color:#fff;
+    font-size:0.95rem;
+    font-weight:800;
+    padding:10px 10px;
+    text-align:left;
+    letter-spacing:0.3px;
   }
-  #exportCard .exp-value{
-    flex:1;
+  #exportCard thead th:first-child{ border-radius:8px 0 0 8px; }
+  #exportCard thead th:last-child{ border-radius:0 8px 8px 0; }
+  #exportCard thead th.center, #exportCard td.center{ text-align:center; }
+
+  #exportCard tbody tr.exp-row-day td{
+    padding:10px 10px;
+    vertical-align:top;
+    border-top:2px solid #fff;
+    border-bottom:2px solid #fff;
   }
-  #exportCard .exp-time{
-    font-weight:700;
+  #exportCard tbody tr.exp-row-day td:first-child{ border-radius:10px 0 0 10px; }
+  #exportCard tbody tr.exp-row-day td:last-child{ border-radius:0 10px 10px 0; }
+
+  #exportCard .cell-day{
+    font-size:1.05rem;
+    font-weight:900;
   }
-  #exportCard .exp-outfit{
-    font-size:0.75rem;
-    font-weight:700;
-    padding:1px 7px;
-    border-radius:20px;
-    margin-left:6px;
+  #exportCard .cell-day .sub{
+    display:block;
+    font-size:0.7rem;
+    font-weight:600;
+    color:#607d8b;
+    margin-top:2px;
+  }
+  #exportCard .cell-time{
+    font-size:1.05rem;
+    font-weight:800;
+    color:#1a237e;
     white-space:nowrap;
   }
-  #exportCard .exp-outfit.white{background:#eceff1; color:#546e7a;}
-  #exportCard .exp-outfit.pe{background:#c8e6c9; color:#2e7d32;}
-  #exportCard .exp-note{
+  #exportCard .cell-periods{
+    font-size:0.72rem;
+    color:#78909c;
+    font-weight:600;
+    margin:2px 0 5px;
+  }
+  #exportCard .cell-off{
+    color:#b0bec5;
+    font-weight:700;
+    font-size:0.95rem;
+  }
+  #exportCard .cell-note{
     font-size:0.76rem;
     color:#607d8b;
     font-style:italic;
-    margin:1px 0 3px 58px;
+    margin-top:3px;
+    line-height:1.3;
   }
-  #exportCard .exp-badges{
-    display:flex;
-    gap:6px;
-    flex-wrap:wrap;
-    margin-top:4px;
-  }
-  #exportCard .badge{
+  #exportCard .outfit-tag{
+    display:inline-block;
     font-size:0.72rem;
-    padding:2px 8px;
+    font-weight:800;
+    padding:2px 9px;
     border-radius:20px;
-    background:#e0e0e0;
-    color:#37474f;
-    font-weight:600;
+    white-space:nowrap;
   }
-  #exportCard .badge.lunch{background:#fff9c4; color:#795548;}
-  #exportCard .badge.event{background:#ffe0b2; color:#e65100;}
+  #exportCard .outfit-tag.white{background:#eceff1; color:#455a64;}
+  #exportCard .outfit-tag.pe{background:#c8e6c9; color:#1b5e20;}
+
+  #exportCard .cell-lunch{
+    font-size:1.3rem;
+    text-align:center;
+  }
+  #exportCard .cell-event{
+    font-size:0.85rem;
+  }
+  #exportCard .cell-event .ev-time{
+    font-weight:800;
+    color:#e65100;
+    display:block;
+  }
+  #exportCard .cell-event .ev-note{
+    font-size:0.76rem;
+    color:#8d6e63;
+    font-style:italic;
+    margin-top:2px;
+    display:block;
+  }
+  #exportCard .cell-dash{
+    color:#cfd8dc;
+    text-align:center;
+    display:block;
+  }
+  #exportCard .off-full{
+    padding:12px !important;
+    text-align:center;
+    font-style:italic;
+    color:#90a4ae;
+    font-size:0.95rem;
+  }
+  #exportCard tfoot td{
+    padding-top:10px;
+    text-align:center;
+    font-size:0.7rem;
+    color:#b0bec5;
+  }
 
   #exportHost{
     position:fixed;
@@ -322,6 +373,7 @@
 </div>
 
 <h1>Xem trước</h1>
+<div class="preview-hint">↔ Vuốt ngang để xem đầy đủ bảng</div>
 <div class="preview-wrap">
   <div id="previewBox"></div>
 </div>
@@ -577,55 +629,85 @@ function renderAllCards(){
   DAYS.forEach(day=> attachDayEvents(day));
 }
 
+function sessionCellHTML(sess, slots){
+  const range = timeRangeFromPeriods(sess.periods, slots);
+  if(!range){
+    return `<span class="cell-off">Không học</span>`;
+  }
+  const outfitTxt = sess.outfit === "theduc" ? "👟 Thể dục" : "👕 Đồ trắng";
+  const outfitCls = sess.outfit === "theduc" ? "pe" : "white";
+  let html = `<div class="cell-time">${range.start} - ${range.end}</div>`;
+  html += `<div class="cell-periods">Tiết ${periodsLabel(range.periods)}</div>`;
+  html += `<span class="outfit-tag ${outfitCls}">${outfitTxt}</span>`;
+  if(sess.note) html += `<div class="cell-note">📝 ${sess.note}</div>`;
+  return html;
+}
+
 function buildExportHTML(){
   const weekInfo = document.getElementById("weekInfo").value.trim();
-  let html = `<div class="title">THỜI KHÓA BIỂU</div>`;
-  html += `<div class="subtitle">${weekInfo ? weekInfo : "&nbsp;"}</div>`;
 
   const bgMap = {
     "day-mon":"#e3f2fd","day-tue":"#fff3e0","day-wed":"#e8f5e9",
     "day-thu":"#fce4ec","day-fri":"#ede7f6","day-sat":"#fffde7"
   };
+  const accentMap = {
+    "day-mon":"#1565c0","day-tue":"#ef6c00","day-wed":"#2e7d32",
+    "day-thu":"#ad1457","day-fri":"#4527a0","day-sat":"#f57f17"
+  };
+
+  let html = `<div class="title">THỜI KHÓA BIỂU</div>`;
+  html += `<div class="subtitle">${weekInfo ? weekInfo : "&nbsp;"}</div>`;
+
+  html += `<table><thead><tr>
+    <th style="width:11%;">Thứ</th>
+    <th style="width:24%;">Buổi sáng</th>
+    <th style="width:24%;">Buổi chiều</th>
+    <th class="center" style="width:9%;">Ở lại trưa</th>
+    <th style="width:32%;">Sự kiện đặc biệt</th>
+  </tr></thead><tbody>`;
 
   DAYS.forEach(day=>{
     const d = state.days[day.key];
     const bg = bgMap[day.cls] || "#f5f5f5";
+    const accent = accentMap[day.cls] || "#37474f";
 
     if(d.off){
-      html += `<div class="exp-day off">${day.name} — Nghỉ, không học 🎈</div>`;
+      html += `<tr class="exp-row-day" style="background:${bg};">
+        <td class="cell-day" style="color:${accent};">${day.name}</td>
+        <td colspan="4" class="off-full">Nghỉ, không học 🎈</td>
+      </tr>`;
       return;
     }
 
-    html += `<div class="exp-day" style="background:${bg};">`;
-    html += `<div class="exp-day-head">${day.name}</div>`;
+    const hasEvent = d.event && (d.eventTime || d.eventNote);
 
-    if(d.event && (d.eventTime || d.eventNote)){
-      html += `<div class="exp-session"><div class="exp-label">Sự kiện:</div><div class="exp-value exp-time">${d.eventTime||"—"}</div></div>`;
-      if(d.eventNote) html += `<div class="exp-note">📌 ${d.eventNote}</div>`;
-    } else {
-      ["morning","afternoon"].forEach(sk=>{
-        const sess = d[sk];
-        const slots = sk === "morning" ? MORNING_SLOTS : AFTERNOON_SLOTS;
-        const label = sk === "morning" ? "Sáng" : "Chiều";
-        const range = timeRangeFromPeriods(sess.periods, slots);
-        if(range){
-          const outfitTxt = sess.outfit === "theduc" ? "👟 Thể dục" : "👕 Đồ trắng";
-          const outfitCls = sess.outfit === "theduc" ? "pe" : "white";
-          html += `<div class="exp-session"><div class="exp-label">${label}:</div><div class="exp-value"><span class="exp-time">${range.start} - ${range.end}</span> <span style="font-size:0.72rem;color:#78909c;">(T${periodsLabel(range.periods)})</span><span class="exp-outfit ${outfitCls}">${outfitTxt}</span></div></div>`;
-          if(sess.note) html += `<div class="exp-note">📝 ${sess.note}</div>`;
-        } else {
-          html += `<div class="exp-session"><div class="exp-label">${label}:</div><div class="exp-value" style="color:#b0bec5;">Không học</div></div>`;
-        }
-      });
+    const morningCell = hasEvent
+      ? `<span class="cell-dash">—</span>`
+      : sessionCellHTML(d.morning, MORNING_SLOTS);
+    const afternoonCell = hasEvent
+      ? `<span class="cell-dash">—</span>`
+      : sessionCellHTML(d.afternoon, AFTERNOON_SLOTS);
+
+    const lunchCell = d.lunchStay ? "🍱" : `<span class="cell-dash">—</span>`;
+
+    let eventCell = `<span class="cell-dash">—</span>`;
+    if(hasEvent){
+      eventCell = `<div class="cell-event">`;
+      if(d.eventTime) eventCell += `<span class="ev-time">🎉 ${d.eventTime}</span>`;
+      if(d.eventNote) eventCell += `<span class="ev-note">${d.eventNote}</span>`;
+      eventCell += `</div>`;
     }
 
-    let badges = "";
-    if(d.lunchStay) badges += `<span class="badge lunch">🍱 Ở lại trưa</span>`;
-    if(d.event && (d.eventTime || d.eventNote)) badges += `<span class="badge event">🎉 Sự kiện</span>`;
-    if(badges) html += `<div class="exp-badges">${badges}</div>`;
-
-    html += `</div>`;
+    html += `<tr class="exp-row-day" style="background:${bg};">
+      <td class="cell-day" style="color:${accent};">${day.name}</td>
+      <td>${morningCell}</td>
+      <td>${afternoonCell}</td>
+      <td class="cell-lunch">${lunchCell}</td>
+      <td>${eventCell}</td>
+    </tr>`;
   });
+
+  html += `</tbody></table>`;
 
   return html;
 }
@@ -633,13 +715,13 @@ function buildExportHTML(){
 function renderPreview(){
   const html = buildExportHTML();
   const previewBox = document.getElementById("previewBox");
-  previewBox.innerHTML = `<div id="exportCard" style="width:100%;max-width:420px;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:14px;">${html}</div>`;
+  previewBox.innerHTML = `<div id="exportCard" style="width:720px;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:14px;">${html}</div>`;
 }
 
 function exportPNG(){
   const html = buildExportHTML();
   const host = document.getElementById("exportHost");
-  host.innerHTML = `<div id="exportCardReal" style="width:420px;">${html}</div>`;
+  host.innerHTML = `<div id="exportCardReal" style="width:720px;">${html}</div>`;
   const el = host.querySelector("#exportCardReal");
   el.id = "exportCard";
   html2canvas(el, {backgroundColor:"#ffffff", scale:3}).then(canvas=>{
