@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thời Khóa Biểu</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --ink:#263238;
+    --line:#cfd8dc;
+    --accent:#3f51b5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI", Roboto, Arial, sans-serif;
+    background:#f4f6f8;
+    color:var(--ink);
+    padding:12px;
+  }
+  h1{
+    font-size:1.3rem;
+    text-align:center;
+    margin:8px 0 16px;
+    color:var(--accent);
+  }
+  .top-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:16px;
+  }
+  .top-bar input{
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:0.95rem;
+    flex:1;
+    min-width:140px;
+  }
+  .day-card{
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    margin-bottom:14px;
+    overflow:hidden;
+    border-left:8px solid var(--accent);
+  }
+  .day-card.day-mon{border-left-color:#1e88e5; background:linear-gradient(180deg,#e3f2fd,#fff 46px);}
+  .day-card.day-tue{border-left-color:#fb8c00; background:linear-gradient(180deg,#fff3e0,#fff 46px);}
+  .day-card.day-wed{border-left-color:#43a047; background:linear-gradient(180deg,#e8f5e9,#fff 46px);}
+  .day-card.day-thu{border-left-color:#d81b60; background:linear-gradient(180deg,#fce4ec,#fff 46px);}
+  .day-card.day-fri{border-left-color:#5e35b1; background:linear-gradient(180deg,#ede7f6,#fff 46px);}
+  .day-card.day-sat{border-left-color:#f9a825; background:linear-gradient(180deg,#fffde7,#fff 46px);}
+
+  .day-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 14px;
+    font-weight:700;
+    font-size:1.05rem;
+  }
+  .day-header label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-weight:400;
+    font-size:0.85rem;
+    color:#546e7a;
+  }
+  .day-body{
+    padding:0 14px 14px;
+  }
+  .off-msg{
+    display:none;
+    padding:14px;
+    text-align:center;
+    color:#90a4ae;
+    font-style:italic;
+  }
+  .session{
+    background:rgba(255,255,255,0.65);
+    border-radius:10px;
+    padding:10px;
+    margin-bottom:10px;
+  }
+  .session h4{
+    margin:0 0 8px;
+    font-size:0.88rem;
+    color:#37474f;
+  }
+  .period-row{
+    display:flex;
+    gap:4px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .period-row label{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:5px 8px;
+    font-size:0.78rem;
+    display:flex;
+    align-items:center;
+    gap:3px;
+    cursor:pointer;
+  }
+  .period-row input{margin:0;}
+  .time-display{
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+  .outfit-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .outfit-btn{
+    flex:1;
+    text-align:center;
+    padding:6px 4px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    font-size:0.8rem;
+    cursor:pointer;
+    background:#fff;
+    color:#607d8b;
+    user-select:none;
+  }
+  .outfit-btn.active-white{
+    background:#eceff1;
+    border-color:#90a4ae;
+    color:#37474f;
+    font-weight:700;
+  }
+  .outfit-btn.active-pe{
+    background:#c8e6c9;
+    border-color:#43a047;
+    color:#2e7d32;
+    font-weight:700;
+  }
+  textarea.note{
+    width:100%;
+    min-height:38px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:5px 7px;
+    font-size:0.8rem;
+    font-family:inherit;
+    resize:vertical;
+  }
+  .full-row{margin-bottom:8px;}
+  .checkbox-line{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.85rem;
+    flex-wrap:wrap;
+  }
+  .event-row{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    flex-wrap:wrap;
+    font-size:0.8rem;
+    margin-bottom:6px;
+  }
+  .event-row input[type=text]{
+    flex:1;
+    min-width:120px;
+    padding:5px 7px;
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin:16px 0;
+  }
+  button{
+    padding:10px 18px;
+    border:none;
+    border-radius:10px;
+    font-size:0.95rem;
+    cursor:pointer;
+    font-weight:600;
+  }
+  #btnExport{background:var(--accent); color:#fff;}
+  #btnReset{background:#eceff1; color:#37474f;}
+  #btnExport:active, #btnReset:active{transform:scale(0.97);}
+
+  .preview-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom:20px;
+  }
+  #previewBox{
+    width:100%;
+    max-width:480px;
+  }
+
+  /* ===== Export card style ===== */
+  #exportCard{
+    background:#ffffff;
+    padding:20px 16px 24px;
+    width:420px;
+    font-family:"Segoe UI", Roboto, Arial, sans-serif;
+    color:#263238;
+  }
+  #exportCard .title{
+    text-align:center;
+    font-size:1.5rem;
+    font-weight:800;
+    color:#283593;
+    letter-spacing:1px;
+    margin-bottom:2px;
+  }
+  #exportCard .subtitle{
+    text-align:center;
+    font-size:0.9rem;
+    color:#607d8b;
+    margin-bottom:14px;
+  }
+  #exportCard .exp-day{
+    border-radius:12px;
+    margin-bottom:10px;
+    padding:10px 12px;
+    border:1px solid rgba(0,0,0,0.06);
+  }
+  #exportCard .exp-day.off{
+    background:#f1f1f1 !important;
+    text-align:center;
+    color:#90a4ae;
+    font-style:italic;
+    padding:10px;
+  }
+  #exportCard .exp-day-head{
+    font-weight:800;
+    font-size:1rem;
+    margin-bottom:6px;
+  }
+  #exportCard .exp-session{
+    display:flex;
+    align-items:flex-start;
+    gap:6px;
+    font-size:0.83rem;
+    margin-bottom:4px;
+  }
+  #exportCard .exp-label{
+    flex:0 0 52px;
+    color:#455a64;
+    font-weight:700;
+  }
+  #exportCard .exp-value{
+    flex:1;
+  }
+  #exportCard .exp-time{
+    font-weight:700;
+  }
+  #exportCard .exp-outfit{
+    font-size:0.75rem;
+    font-weight:700;
+    padding:1px 7px;
+    border-radius:20px;
+    margin-left:6px;
+    white-space:nowrap;
+  }
+  #exportCard .exp-outfit.white{background:#eceff1; color:#546e7a;}
+  #exportCard .exp-outfit.pe{background:#c8e6c9; color:#2e7d32;}
+  #exportCard .exp-note{
+    font-size:0.76rem;
+    color:#607d8b;
+    font-style:italic;
+    margin:1px 0 3px 58px;
+  }
+  #exportCard .exp-badges{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  #exportCard .badge{
+    font-size:0.72rem;
+    padding:2px 8px;
+    border-radius:20px;
+    background:#e0e0e0;
+    color:#37474f;
+    font-weight:600;
+  }
+  #exportCard .badge.lunch{background:#fff9c4; color:#795548;}
+  #exportCard .badge.event{background:#ffe0b2; color:#e65100;}
+
+  #exportHost{
+    position:fixed;
+    left:-9999px;
+    top:0;
+  }
+</style>
+</head>
+<body>
+
+<h1>📅 Nhập Thời Khóa Biểu</h1>
+
+<div class="top-bar">
+  <input type="text" id="weekInfo" placeholder="Tuần / từ ngày ... đến ngày ... (tùy chọn)">
+</div>
+
+<div id="daysContainer"></div>
+
+<div class="actions">
+  <button id="btnExport">📷 Xuất PNG</button>
+  <button id="btnReset">↺ Đặt lại</button>
+</div>
+
+<h1>Xem trước</h1>
+<div class="preview-wrap">
+  <div id="previewBox"></div>
+</div>
+
+<div id="exportHost"></div>
+
+<script>
+const DAYS = [
+  {key:"t2", name:"Thứ 2", cls:"day-mon"},
+  {key:"t3", name:"Thứ 3", cls:"day-tue"},
+  {key:"t4", name:"Thứ 4", cls:"day-wed"},
+  {key:"t5", name:"Thứ 5", cls:"day-thu"},
+  {key:"t6", name:"Thứ 6", cls:"day-fri"},
+  {key:"t7", name:"Thứ 7", cls:"day-sat"},
+];
+
+const MORNING_SLOTS = [
+  ["07:00","07:45"],
+  ["07:50","08:35"],
+  ["08:55","09:40"],
+  ["09:45","10:30"],
+  ["10:35","11:20"],
+];
+const AFTERNOON_SLOTS = [
+  ["13:00","13:45"],
+  ["13:50","14:35"],
+  ["14:55","15:40"],
+  ["15:45","16:30"],
+  ["16:35","17:20"],
+];
+
+const STORAGE_KEY = "tkb_data_v2";
+
+function defaultSession(periods){
+  return { periods: periods || [], outfit: "trang", note: "" };
+}
+function defaultDayData(){
+  return {
+    off: false,
+    morning: defaultSession([1,2,3,4,5]),
+    afternoon: defaultSession(),
+    lunchStay: false,
+    event: false,
+    eventTime: "",
+    eventNote: "",
+  };
+}
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const data = {weekInfo:"", days:{}};
+  DAYS.forEach(d=> data.days[d.key] = defaultDayData());
+  return data;
+}
+
+let state = loadData();
+DAYS.forEach(d=>{ if(!state.days[d.key]) state.days[d.key] = defaultDayData(); });
+if(state.weekInfo === undefined) state.weekInfo = "";
+
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// Compute time range from a list of selected period numbers (1-5), possibly with gaps.
+// Start = start of earliest selected period. End = end of latest selected period.
+function timeRangeFromPeriods(periodsArr, slots){
+  if(!periodsArr || periodsArr.length === 0) return null;
+  const nums = periodsArr.map(Number).sort((a,b)=>a-b);
+  const first = nums[0], last = nums[nums.length-1];
+  return {
+    start: slots[first-1][0],
+    end: slots[last-1][1],
+    periods: nums
+  };
+}
+
+function periodsLabel(nums){
+  return nums.join(", ");
+}
+
+function buildSessionHTML(dayKey, sessionKey, title, icon){
+  return `
+    <div class="session">
+      <h4>${icon} ${title}</h4>
+      <div class="period-row" data-role="periods-${sessionKey}"></div>
+      <div class="time-display" data-role="time-${sessionKey}">--</div>
+      <div class="outfit-row" data-role="outfitrow-${sessionKey}">
+        <div class="outfit-btn" data-role="outfit-white-${sessionKey}">👕 Đồ trắng</div>
+        <div class="outfit-btn" data-role="outfit-pe-${sessionKey}">👟 Thể dục</div>
+      </div>
+      <textarea class="note" placeholder="Ghi chú ${title.toLowerCase()}..." data-role="note-${sessionKey}"></textarea>
+    </div>
+  `;
+}
+
+function buildDayCard(day){
+  const d = state.days[day.key];
+  const wrapper = document.createElement("div");
+  wrapper.className = `day-card ${day.cls}`;
+  wrapper.id = `card-${day.key}`;
+
+  wrapper.innerHTML = `
+    <div class="day-header">
+      <span>${day.name}</span>
+      <label><input type="checkbox" data-role="off" ${d.off?"checked":""}> Nghỉ / không học</label>
+    </div>
+    <div class="day-body" id="body-${day.key}" style="${d.off?'display:none;':''}">
+      ${buildSessionHTML(day.key,"morning","Buổi sáng","🌅")}
+      ${buildSessionHTML(day.key,"afternoon","Buổi chiều","🌇")}
+
+      <div class="full-row">
+        <div class="checkbox-line">
+          <label><input type="checkbox" data-role="lunchStay" ${d.lunchStay?"checked":""}> 🍱 Ở lại buổi trưa</label>
+        </div>
+      </div>
+
+      <div class="full-row">
+        <div class="event-row">
+          <label><input type="checkbox" data-role="event" ${d.event?"checked":""}> 🎉 Sự kiện đặc biệt</label>
+        </div>
+        <div class="event-row" data-role="eventFields" style="${d.event?'':'display:none;'}">
+          <input type="text" placeholder="Thời gian, vd: 13:00 - 15:30" data-role="eventTime" value="${d.eventTime||""}">
+        </div>
+        <div class="event-row" data-role="eventNoteRow" style="${d.event?'':'display:none;'}">
+          <input type="text" placeholder="Ghi chú sự kiện (vd: Hội thao, mặc đồ thể thao...)" data-role="eventNote" value="${d.eventNote||""}">
+        </div>
+      </div>
+    </div>
+    <div class="off-msg" data-role="offMsg" style="${d.off?'display:block;':''}">Hôm nay nghỉ, không học 🎈</div>
+  `;
+  return wrapper;
+}
+
+function renderPeriodCheckboxes(dayKey, sessionKey){
+  const box = document.querySelector(`#card-${dayKey} [data-role=periods-${sessionKey}]`);
+  const sess = state.days[dayKey][sessionKey];
+  box.innerHTML = "";
+  for(let i=1;i<=5;i++){
+    const checked = sess.periods.includes(i);
+    const lab = document.createElement("label");
+    lab.innerHTML = `<input type="checkbox" data-period="${i}" ${checked?"checked":""}> Tiết ${i}`;
+    box.appendChild(lab);
+  }
+  box.addEventListener("change", e=>{
+    if(!e.target.dataset.period) return;
+    const p = parseInt(e.target.dataset.period,10);
+    const set = new Set(sess.periods);
+    if(e.target.checked) set.add(p); else set.delete(p);
+    sess.periods = Array.from(set).sort((a,b)=>a-b);
+    updateSessionUI(dayKey, sessionKey);
+    saveData(); renderPreview();
+  }, {once:false});
+}
+
+function updateSessionUI(dayKey, sessionKey){
+  const sess = state.days[dayKey][sessionKey];
+  const slots = sessionKey === "morning" ? MORNING_SLOTS : AFTERNOON_SLOTS;
+  const timeDisp = document.querySelector(`#card-${dayKey} [data-role=time-${sessionKey}]`);
+  const range = timeRangeFromPeriods(sess.periods, slots);
+  const outfitRow = document.querySelector(`#card-${dayKey} [data-role=outfitrow-${sessionKey}]`);
+
+  if(range){
+    timeDisp.textContent = `Vào ${range.start} — Tan ${range.end}  (Tiết ${periodsLabel(range.periods)})`;
+    outfitRow.style.opacity = "1";
+    outfitRow.style.pointerEvents = "auto";
+  } else {
+    timeDisp.textContent = "Không học buổi này";
+    outfitRow.style.opacity = "0.4";
+    outfitRow.style.pointerEvents = "none";
+  }
+
+  const whiteBtn = document.querySelector(`#card-${dayKey} [data-role=outfit-white-${sessionKey}]`);
+  const peBtn = document.querySelector(`#card-${dayKey} [data-role=outfit-pe-${sessionKey}]`);
+  whiteBtn.classList.toggle("active-white", sess.outfit === "trang");
+  peBtn.classList.toggle("active-pe", sess.outfit === "theduc");
+}
+
+function attachSessionEvents(dayKey, sessionKey){
+  const sess = state.days[dayKey][sessionKey];
+  renderPeriodCheckboxes(dayKey, sessionKey);
+
+  const noteEl = document.querySelector(`#card-${dayKey} [data-role=note-${sessionKey}]`);
+  noteEl.value = sess.note || "";
+  noteEl.addEventListener("input", e=>{
+    sess.note = e.target.value;
+    saveData(); renderPreview();
+  });
+
+  const whiteBtn = document.querySelector(`#card-${dayKey} [data-role=outfit-white-${sessionKey}]`);
+  const peBtn = document.querySelector(`#card-${dayKey} [data-role=outfit-pe-${sessionKey}]`);
+  whiteBtn.addEventListener("click", ()=>{
+    sess.outfit = "trang";
+    updateSessionUI(dayKey, sessionKey);
+    saveData(); renderPreview();
+  });
+  peBtn.addEventListener("click", ()=>{
+    sess.outfit = "theduc";
+    updateSessionUI(dayKey, sessionKey);
+    saveData(); renderPreview();
+  });
+
+  updateSessionUI(dayKey, sessionKey);
+}
+
+function attachDayEvents(day){
+  const key = day.key;
+  const card = document.getElementById(`card-${key}`);
+
+  card.querySelector('[data-role=off]').addEventListener("change", e=>{
+    state.days[key].off = e.target.checked;
+    const body = document.getElementById(`body-${key}`);
+    const offMsg = card.querySelector('[data-role=offMsg]');
+    body.style.display = e.target.checked ? "none" : "";
+    offMsg.style.display = e.target.checked ? "block" : "none";
+    saveData(); renderPreview();
+  });
+
+  card.querySelector('[data-role=lunchStay]').addEventListener("change", e=>{
+    state.days[key].lunchStay = e.target.checked;
+    saveData(); renderPreview();
+  });
+
+  card.querySelector('[data-role=event]').addEventListener("change", e=>{
+    state.days[key].event = e.target.checked;
+    card.querySelector('[data-role=eventFields]').style.display = e.target.checked ? "" : "none";
+    card.querySelector('[data-role=eventNoteRow]').style.display = e.target.checked ? "" : "none";
+    saveData(); renderPreview();
+  });
+
+  card.querySelector('[data-role=eventTime]').addEventListener("input", e=>{
+    state.days[key].eventTime = e.target.value;
+    saveData(); renderPreview();
+  });
+  card.querySelector('[data-role=eventNote]').addEventListener("input", e=>{
+    state.days[key].eventNote = e.target.value;
+    saveData(); renderPreview();
+  });
+
+  attachSessionEvents(key, "morning");
+  attachSessionEvents(key, "afternoon");
+}
+
+function renderAllCards(){
+  const container = document.getElementById("daysContainer");
+  container.innerHTML = "";
+  DAYS.forEach(day=>{
+    const card = buildDayCard(day);
+    container.appendChild(card);
+  });
+  DAYS.forEach(day=> attachDayEvents(day));
+}
+
+function buildExportHTML(){
+  const weekInfo = document.getElementById("weekInfo").value.trim();
+  let html = `<div class="title">THỜI KHÓA BIỂU</div>`;
+  html += `<div class="subtitle">${weekInfo ? weekInfo : "&nbsp;"}</div>`;
+
+  const bgMap = {
+    "day-mon":"#e3f2fd","day-tue":"#fff3e0","day-wed":"#e8f5e9",
+    "day-thu":"#fce4ec","day-fri":"#ede7f6","day-sat":"#fffde7"
+  };
+
+  DAYS.forEach(day=>{
+    const d = state.days[day.key];
+    const bg = bgMap[day.cls] || "#f5f5f5";
+
+    if(d.off){
+      html += `<div class="exp-day off">${day.name} — Nghỉ, không học 🎈</div>`;
+      return;
+    }
+
+    html += `<div class="exp-day" style="background:${bg};">`;
+    html += `<div class="exp-day-head">${day.name}</div>`;
+
+    if(d.event && (d.eventTime || d.eventNote)){
+      html += `<div class="exp-session"><div class="exp-label">Sự kiện:</div><div class="exp-value exp-time">${d.eventTime||"—"}</div></div>`;
+      if(d.eventNote) html += `<div class="exp-note">📌 ${d.eventNote}</div>`;
+    } else {
+      ["morning","afternoon"].forEach(sk=>{
+        const sess = d[sk];
+        const slots = sk === "morning" ? MORNING_SLOTS : AFTERNOON_SLOTS;
+        const label = sk === "morning" ? "Sáng" : "Chiều";
+        const range = timeRangeFromPeriods(sess.periods, slots);
+        if(range){
+          const outfitTxt = sess.outfit === "theduc" ? "👟 Thể dục" : "👕 Đồ trắng";
+          const outfitCls = sess.outfit === "theduc" ? "pe" : "white";
+          html += `<div class="exp-session"><div class="exp-label">${label}:</div><div class="exp-value"><span class="exp-time">${range.start} - ${range.end}</span> <span style="font-size:0.72rem;color:#78909c;">(T${periodsLabel(range.periods)})</span><span class="exp-outfit ${outfitCls}">${outfitTxt}</span></div></div>`;
+          if(sess.note) html += `<div class="exp-note">📝 ${sess.note}</div>`;
+        } else {
+          html += `<div class="exp-session"><div class="exp-label">${label}:</div><div class="exp-value" style="color:#b0bec5;">Không học</div></div>`;
+        }
+      });
+    }
+
+    let badges = "";
+    if(d.lunchStay) badges += `<span class="badge lunch">🍱 Ở lại trưa</span>`;
+    if(d.event && (d.eventTime || d.eventNote)) badges += `<span class="badge event">🎉 Sự kiện</span>`;
+    if(badges) html += `<div class="exp-badges">${badges}</div>`;
+
+    html += `</div>`;
+  });
+
+  return html;
+}
+
+function renderPreview(){
+  const html = buildExportHTML();
+  const previewBox = document.getElementById("previewBox");
+  previewBox.innerHTML = `<div id="exportCard" style="width:100%;max-width:420px;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:14px;">${html}</div>`;
+}
+
+function exportPNG(){
+  const html = buildExportHTML();
+  const host = document.getElementById("exportHost");
+  host.innerHTML = `<div id="exportCardReal" style="width:420px;">${html}</div>`;
+  const el = host.querySelector("#exportCardReal");
+  el.id = "exportCard";
+  html2canvas(el, {backgroundColor:"#ffffff", scale:3}).then(canvas=>{
+    const link = document.createElement("a");
+    const weekInfo = document.getElementById("weekInfo").value.trim();
+    const fname = weekInfo ? `TKB_${weekInfo.replace(/[^\w]+/g,"_")}.png` : "ThoiKhoaBieu.png";
+    link.download = fname;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+    host.innerHTML = "";
+  }).catch(err=>{
+    alert("Có lỗi khi xuất ảnh: " + err.message);
+    host.innerHTML = "";
+  });
+}
+
+function resetAll(){
+  if(!confirm("Bạn có chắc muốn đặt lại toàn bộ thời khóa biểu?")) return;
+  state = {weekInfo:"", days:{}};
+  DAYS.forEach(d=> state.days[d.key] = defaultDayData());
+  document.getElementById("weekInfo").value = "";
+  saveData();
+  renderAllCards();
+  renderPreview();
+}
+
+document.getElementById("weekInfo").addEventListener("input", e=>{
+  state.weekInfo = e.target.value;
+  saveData();
+  renderPreview();
+});
+document.getElementById("btnExport").addEventListener("click", exportPNG);
+document.getElementById("btnReset").addEventListener("click", resetAll);
+
+document.getElementById("weekInfo").value = state.weekInfo || "";
+renderAllCards();
+renderPreview();
+</script>
+</body>
+</html>
