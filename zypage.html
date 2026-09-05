@@ -49,13 +49,13 @@
             z-index: 15;
         }
 
-        /* StreamElements overlay - full màn hình */
-        .streamelements-container {
+        /* Synchra widget - ô nhỏ ở góc phải trên cùng (không fullscreen) */
+        .synchra-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 20px;
+            right: 20px;
+            width: 380px;
+            height: 200px;
             z-index: 1;
         }
 
@@ -78,16 +78,18 @@
         }
 
         .leaderboard-container,
-        .leaderboard-container iframe {
+        .leaderboard-container iframe,
+        .synchra-container,
+        .synchra-container iframe {
             border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <!-- StreamElements Overlay - Full màn hình (layer thấp nhất) -->
-    <div class="streamelements-container">
+    <!-- Synchra Widget - ô nhỏ ở góc phải trên cùng (layer thấp nhất) -->
+    <div class="synchra-container">
         <iframe 
-            src="https://streamelements.com/overlay/6911e12e6c88d2e428666b45/ifLEBz50r5edovnS4ReIqZa6fPbCmj5V8fkNBUARFYNmRYpF"
+            src="https://dash.synchra.net/widget/019f7582-7517-75dc-9c49-0f058992b658"
             allowtransparency="true"
             scrolling="no">
         </iframe>
@@ -138,16 +140,12 @@
 
         function switchLeaderboard() {
             if (showingZypage) {
-                // Fade out Zypage
                 zypage.classList.add('hidden');
-                // Fade in PlayerDuo
                 setTimeout(() => {
                     playerduo.classList.remove('hidden');
                 }, 1000);
             } else {
-                // Fade out PlayerDuo
                 playerduo.classList.add('hidden');
-                // Fade in Zypage
                 setTimeout(() => {
                     zypage.classList.remove('hidden');
                 }, 1000);
@@ -155,7 +153,6 @@
             showingZypage = !showingZypage;
         }
 
-        // Chuyển đổi mỗi 120 giây (2 phút)
         setInterval(switchLeaderboard, 120000);
     </script>
 </body>
