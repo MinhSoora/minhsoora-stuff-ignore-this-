@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Overlay - Donate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: transparent;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Container cho donate notify ở giữa */
+        .donate-notify-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            z-index: 10;
+        }
+
+        /* Container cho bảng xếp hạng ở góc phải */
+        .leaderboard-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            z-index: 5;
+        }
+
+        /* Container cho PlayerDuo notify overlay */
+        .playerduo-notify-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            z-index: 15;
+        }
+
+        /* Synchra widget - ô nhỏ ở góc phải trên cùng (không fullscreen) */
+        .synchra-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 380px;
+            height: 200px;
+            z-index: 1;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: transparent;
+        }
+
+        /* Fade animation */
+        .fade {
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .fade.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .leaderboard-container,
+        .leaderboard-container iframe,
+        .synchra-container,
+        .synchra-container iframe {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Synchra Widget - ô nhỏ ở góc phải trên cùng (layer thấp nhất) -->
+    <div class="synchra-container">
+        <iframe 
+            src="https://dash.synchra.net/widget/019f7582-7517-75dc-9c49-0f058992b658"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <!-- Zypage Donate Notify ở giữa màn hình -->
+    <div class="donate-notify-container">
+        <iframe 
+            src="https://zypage.com/donate-message/ca32421f326ace4afa951816a4984b426c82ae81"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <!-- PlayerDuo Donate Notify Overlay ở giữa màn hình -->
+    <div class="playerduo-notify-container">
+        <iframe 
+            src="https://playerduo.net/streaming/loop?code=68b51aa61eb96&user_id=2722735"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <!-- Bảng xếp hạng ở góc phải (Zypage) -->
+    <div class="leaderboard-container fade" id="zypage-leaderboard">
+        <iframe 
+            src="https://zypage.com/donate-top/ca32421f326ace4afa951816a4984b426c82ae81?type=text&time=all&limit=10&amount=yes"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <!-- Bảng xếp hạng ở góc phải (PlayerDuo) -->
+    <div class="leaderboard-container fade hidden" id="playerduo-leaderboard">
+        <iframe 
+            src="https://playerduo.net/streaming/rank?rank=3&type=2&user_id=2722735"
+            allowtransparency="true"
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <script>
+        // Thay phiên hiển thị bảng xếp hạng mỗi 120 giây
+        const zypage = document.getElementById('zypage-leaderboard');
+        const playerduo = document.getElementById('playerduo-leaderboard');
+        
+        let showingZypage = true;
+
+        function switchLeaderboard() {
+            if (showingZypage) {
+                zypage.classList.add('hidden');
+                setTimeout(() => {
+                    playerduo.classList.remove('hidden');
+                }, 1000);
+            } else {
+                playerduo.classList.add('hidden');
+                setTimeout(() => {
+                    zypage.classList.remove('hidden');
+                }, 1000);
+            }
+            showingZypage = !showingZypage;
+        }
+
+        setInterval(switchLeaderboard, 120000);
+    </script>
+</body>
+</html>
