@@ -35,7 +35,7 @@ body.transparent .stage { background:transparent; }
   transform:translateX(100%);
 }
 .top  { top:0;      height:19.6%; color:var(--paper); font-size:9cqh;  letter-spacing:.01em; }
-.band { top:19.6%;  height:52.1%; left:-2px; width:calc(100% + 4px); background:var(--paper); color:var(--ink); font-size:25cqh; letter-spacing:-.01em; }
+.band { top:19.6%;  height:52.1%; left:-2px; width:calc(100% + 4px); background:var(--paper); color:var(--ink); font-size:var(--fs, 25cqh); letter-spacing:-.01em; overflow:hidden; }
 .bot  { top:71.7%;  height:28.3%; color:var(--paper); font-size:9cqh;  letter-spacing:.01em; }
 .bot, .top { font-weight:700; }
 .band span { display:block; will-change:transform; }
@@ -117,7 +117,27 @@ body.transparent .stage { background:transparent; }
     await wait(cfg.gap * 1000);
     play();
   }
-  play();
+  // Tự co cỡ chữ để không tràn khung (font dự phòng thường rộng hơn Futura)
+  const stage = document.getElementById('stage');
+  function fit() {
+    const maxW = stage.clientWidth * 0.92;
+    let k = 1;
+    [A.txt, B.txt].forEach(el => {
+      el.parentElement.style.setProperty('--fs', '25cqh');
+      k = Math.min(k, maxW / el.getBoundingClientRect().width);
+    });
+    [A.band, B.band].forEach(el => el.style.setProperty('--fs', (25 * Math.min(1, k)) + 'cqh'));
+    [A.top, A.bot, B.top, B.bot].forEach(el => {
+      el.style.fontSize = '';
+      const r = document.createRange(); r.selectNodeContents(el);
+      const w = r.getBoundingClientRect().width, m = stage.clientWidth * 0.92;
+      if (w > m) el.style.fontSize = (9 * m / w) + 'cqh';
+    });
+  }
+  window.addEventListener('resize', fit);
+  fit();
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(() => { fit(); play(); });
 })();
 </script>
 </body>
