@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bộ trắc nghiệm tình huống — Tính kỉ luật</title>
+<style>
+  :root{
+    --bg:#f6f3ee;
+    --card:#ffffff;
+    --ink:#26231f;
+    --muted:#7a746a;
+    --accent:#b5482e;
+    --accent-2:#2f6b4f;
+    --pending:#f4c542;
+    --pending-bg:#fff8e3;
+    --correct:#2f6b4f;
+    --correct-bg:#e7f3ea;
+    --wrong:#b5482e;
+    --wrong-bg:#fbeae6;
+    --border:#e4ddd0;
+    --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1c1a17; --card:#28251f; --ink:#ece7dd; --muted:#a79f8f;
+      --border:#3a352c; --pending-bg:#3a3116; --correct-bg:#1e3226; --wrong-bg:#3a2620;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1c1a17; --card:#28251f; --ink:#ece7dd; --muted:#a79f8f;
+    --border:#3a352c; --pending-bg:#3a3116; --correct-bg:#1e3226; --wrong-bg:#3a2620;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Georgia","Iowan Old Style",serif;
+    display:flex;
+    flex-direction:column;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    overflow:hidden;
+  }
+  .topbar{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 20px;
+    border-bottom:1px solid var(--border);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    flex:0 0 auto;
+  }
+  .topbar h1{font-size:1rem;margin:0;font-weight:700;letter-spacing:.3px;flex:0 0 auto;white-space:nowrap;}
+  .progress-track{flex:1;height:6px;background:var(--border);border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--accent-2);width:0%;transition:width .35s ease;}
+  .counter{flex:0 0 auto;font-size:.82rem;color:var(--muted);white-space:nowrap;}
+  .icon-btn{
+    background:var(--card);border:1px solid var(--border);border-radius:50%;
+    width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:.95rem;flex:0 0 auto;
+  }
+  .stage{
+    flex:1 1 auto;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+  }
+  .slide{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 20px 20px;
+    opacity:0;
+    transform:translateX(40px);
+    pointer-events:none;
+    transition:opacity .35s ease, transform .4s ease;
+  }
+  .slide.active{
+    opacity:1;
+    transform:translateX(0);
+    pointer-events:auto;
+  }
+  .slide.leaving-left{ transform:translateX(-40px); }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:26px 24px;
+    max-width:720px;
+    width:100%;
+    max-height:100%;
+    overflow-y:auto;
+    box-shadow:0 4px 24px rgba(0,0,0,0.08);
+  }
+  .qtag{
+    display:inline-block;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;
+    color:var(--accent);font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;margin-bottom:8px;
+  }
+  .qtext{font-size:1.05rem;line-height:1.55;white-space:pre-wrap;margin-bottom:16px;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{
+    display:flex;align-items:flex-start;gap:10px;text-align:left;
+    border:1.5px solid var(--border);background:transparent;color:var(--ink);
+    border-radius:10px;padding:12px 14px;font-family:inherit;font-size:.97rem;line-height:1.5;
+    cursor:pointer;transition:background .25s ease,border-color .25s ease,transform .15s ease;
+  }
+  .opt:hover{border-color:var(--accent-2);}
+  .opt:active{transform:scale(0.99);}
+  .opt .label{
+    flex:0 0 auto;font-weight:700;font-family:"Helvetica Neue",Arial,sans-serif;
+    width:22px;height:22px;border-radius:50%;border:1.5px solid var(--muted);
+    display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--muted);
+  }
+  .opt.selected{background:var(--pending-bg);border-color:var(--pending);}
+  .opt.selected .label{border-color:var(--pending);color:var(--ink);background:var(--pending);}
+  .opt.revealed-correct{background:var(--correct-bg);border-color:var(--correct);animation:pop .4s ease;}
+  .opt.revealed-correct .label{background:var(--correct);border-color:var(--correct);color:#fff;}
+  .opt.revealed-wrong{background:var(--wrong-bg);border-color:var(--wrong);animation:shake .4s ease;}
+  .opt.revealed-wrong .label{background:var(--wrong);border-color:var(--wrong);color:#fff;}
+  .opt.revealed-unselected-correct{border-color:var(--correct);}
+  .opt.revealed-unselected-correct .label{border-color:var(--correct);color:var(--correct);}
+  @keyframes pop{0%{transform:scale(1);}35%{transform:scale(1.03);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-4px);}40%{transform:translateX(4px);}60%{transform:translateX(-3px);}80%{transform:translateX(3px);}}
+  .controls{display:flex;justify-content:flex-end;margin-top:16px;gap:10px;}
+  .btn{
+    font-family:"Helvetica Neue",Arial,sans-serif;font-size:.9rem;font-weight:600;
+    border:none;border-radius:999px;padding:10px 20px;cursor:pointer;
+    transition:opacity .2s ease,transform .15s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-reveal{background:var(--accent);color:#fff;}
+  .btn-reveal:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-reset{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .reason{
+    margin-top:16px;padding:0 16px;border-radius:10px;background:var(--correct-bg);border:1px solid var(--correct);
+    font-size:.93rem;line-height:1.6;opacity:0;max-height:0;overflow:hidden;
+    transition:opacity .4s ease,max-height .5s ease,padding .4s ease;
+  }
+  .reason.show{opacity:1;max-height:500px;padding:14px 16px;}
+  .reason .rtitle{font-weight:700;font-family:"Helvetica Neue",Arial,sans-serif;color:var(--correct);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+
+  .navbar{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 20px calc(env(safe-area-inset-bottom,0px) + 14px);
+    border-top:1px solid var(--border);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+  }
+  .nav-btn{
+    background:var(--card);border:1px solid var(--border);color:var(--ink);
+    border-radius:999px;padding:10px 18px;font-size:.9rem;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+    transition:opacity .2s ease, transform .15s ease;
+  }
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .nav-btn:active{transform:scale(0.96);}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:50%;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .2s ease, transform .2s ease;}
+  .dot.active{background:var(--accent);transform:scale(1.3);}
+  .dot.done{background:var(--accent-2);}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>Tính kỉ luật</h1>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="counter" id="counter">1 / 11</div>
+    <button class="icon-btn" id="soundToggle" title="Bật/tắt âm thanh">🔊</button>
+    <button class="icon-btn" id="themeToggle" title="Đổi giao diện sáng/tối">🌓</button>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <div class="navbar">
+    <button class="nav-btn" id="prevBtn">← Trước</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn">Tiếp →</button>
+  </div>
+
+<script>
+const questions = [
+{
+  tag: "Câu 1 · ABCD",
+  text: `Nhóm của An thống nhất mỗi thành viên phải hoàn thành phần việc trước 20h thứ Sáu. Đến 19h30, An đã hoàn thành khoảng 90% nhưng phát hiện một chi tiết trong phần mình có thể làm ảnh hưởng đến toàn bộ nội dung nếu không sửa. Việc sửa sẽ khiến An trễ hạn khoảng 30 phút.
+
+An nên làm gì?`,
+  options: [
+    {label:"A", text:"Gửi ngay phần đã làm để giữ đúng thời hạn, phần còn lại tự sửa sau."},
+    {label:"B", text:"Ưu tiên sửa cho hoàn chỉnh rồi mới gửi, vì chất lượng quan trọng hơn thời hạn."},
+    {label:"C", text:"Báo ngay cho nhóm về tình hình, nêu rõ thời gian cần thêm và thống nhất cách xử lý."},
+    {label:"D", text:"Tự quyết định gửi muộn vì An cho rằng sửa phần đó là cần thiết cho cả nhóm."}
+  ],
+  correct: "C",
+  reason: "C vừa thể hiện trách nhiệm với chất lượng công việc, vừa tôn trọng cam kết về thời gian. Quan trọng hơn, An không tự quyết định thay cả nhóm mà chủ động thông báo để mọi người cùng biết và thống nhất phương án. Tính kỉ luật không chỉ là cố hoàn thành đúng hạn bằng mọi giá, mà còn là biết chịu trách nhiệm khi kế hoạch phát sinh vấn đề."
+},
+{
+  tag: "Câu 2 · ABCD",
+  text: `Minh tự đặt mục tiêu mỗi tối học 2 tiếng. Một hôm Minh đã học được 1 tiếng 30 phút thì nhận ra mình gần như không còn tập trung. Nếu tiếp tục, Minh có thể "đủ 2 tiếng" nhưng hiệu quả rất thấp.
+
+Lựa chọn nào thể hiện tính kỉ luật hợp lý nhất?`,
+  options: [
+    {label:"A", text:"Bắt buộc học đủ 2 tiếng vì đã đặt mục tiêu thì không được thay đổi."},
+    {label:"B", text:"Nghỉ ngay vì hiệu quả học tập quan trọng hơn thời gian đã đặt ra."},
+    {label:"C", text:"Nghỉ một khoảng ngắn, đánh giá lại khả năng tập trung rồi quyết định có tiếp tục hay điều chỉnh kế hoạch."},
+    {label:"D", text:"Bỏ phần còn lại và hôm sau học bù gấp đôi để giữ tổng thời gian học."}
+  ],
+  correct: "C",
+  reason: "Kỉ luật không đồng nghĩa với việc máy móc ép bản thân thực hiện một kế hoạch dù hoàn cảnh đã thay đổi. Cách C yêu cầu Minh tự đánh giá tình trạng của mình, nghỉ có chủ đích và đưa ra quyết định dựa trên mục tiêu ban đầu. Đây là sự kết hợp giữa tự kiểm soát và khả năng điều chỉnh kế hoạch."
+},
+{
+  tag: "Câu 3 · Đúng / Sai",
+  text: `Một học sinh đã hứa với nhóm sẽ hoàn thành nhiệm vụ vào tối thứ Bảy. Đến tối, gia đình có việc đột xuất khiến em không thể hoàn thành đúng hạn.
+
+Nhận định: "Nếu có lý do chính đáng thì việc không hoàn thành đúng cam kết không còn liên quan đến tính kỉ luật."`,
+  options: [
+    {label:"Đ", text:"Đúng"},
+    {label:"S", text:"Sai"}
+  ],
+  correct: "S",
+  reason: "Có lý do chính đáng có thể giải thích cho việc không hoàn thành đúng hạn, nhưng không có nghĩa là trách nhiệm tự động biến mất. Người có tính kỉ luật nên chủ động thông báo, giải thích tình hình và tìm phương án khắc phục. Kỉ luật còn thể hiện ở cách một người xử lý hậu quả khi không thể thực hiện đúng cam kết."
+},
+{
+  tag: "Câu 4 · ABCD",
+  text: `Tùng được giao phụ trách một phần quan trọng của chương trình. Một ngày trước khi diễn ra, Tùng nhận thấy cách phân công hiện tại có một điểm bất hợp lý và nếu giữ nguyên có thể khiến chương trình gặp vấn đề.
+
+Tuy nhiên, thay đổi kế hoạch vào thời điểm này cũng có thể khiến những người khác phải làm lại phần việc của họ.
+
+Tùng nên:`,
+  options: [
+    {label:"A", text:"Giữ nguyên kế hoạch vì đã thống nhất từ trước."},
+    {label:"B", text:"Tự ý thay đổi ngay vì Tùng phát hiện vấn đề."},
+    {label:"C", text:"Báo cho người phụ trách, phân tích rủi ro và cùng thống nhất xem có cần điều chỉnh hay không."},
+    {label:"D", text:"Không làm gì vì trách nhiệm của Tùng chỉ là thực hiện đúng phần được giao."}
+  ],
+  correct: "C",
+  reason: "Tùng cần cân bằng giữa việc tuân thủ kế hoạch và trách nhiệm phát hiện vấn đề. Giữ nguyên kế hoạch một cách máy móc có thể gây hậu quả, trong khi tự ý thay đổi có thể ảnh hưởng đến người khác. Cách C giúp vấn đề được đánh giá dựa trên thông tin đầy đủ và tránh việc một cá nhân tự quyết định thay cả tập thể."
+},
+{
+  tag: "Câu 5 · Đúng / Sai",
+  text: `Một người luôn hoàn thành đúng mọi kế hoạch đã đặt ra, nhưng thường xuyên phải bỏ qua những việc phát sinh quan trọng để không phá vỡ lịch trình của mình.
+
+Nhận định: "Việc luôn giữ đúng kế hoạch chưa chắc đồng nghĩa với việc người đó có tính kỉ luật tốt."`,
+  options: [
+    {label:"Đ", text:"Đúng"},
+    {label:"S", text:"Sai"}
+  ],
+  correct: "Đ",
+  reason: "Kỉ luật nhằm giúp con người quản lý bản thân và đạt mục tiêu, chứ không phải biến kế hoạch thành thứ tuyệt đối không được thay đổi. Nếu một kế hoạch không còn phù hợp nhưng người đó vẫn cố giữ nguyên bất chấp hậu quả, đó có thể là sự cứng nhắc hơn là khả năng tự quản lý. Người có kỉ luật cần biết điều chỉnh khi hoàn cảnh thay đổi."
+},
+{
+  tag: "Câu 6 · ABCD",
+  text: `Lan nhận nhiệm vụ chuẩn bị tài liệu cho nhóm. Lan có thể hoàn thành nhanh bằng cách sử dụng một tài liệu trên mạng, nhưng chưa kiểm chứng độ chính xác của nguồn. Nếu kiểm tra kỹ, Lan sẽ mất thêm nhiều thời gian và có nguy cơ không kịp hạn.
+
+Lan nên ưu tiên điều gì?`,
+  options: [
+    {label:"A", text:"Dùng ngay tài liệu vì hoàn thành đúng hạn là trách nhiệm quan trọng nhất."},
+    {label:"B", text:"Kiểm chứng toàn bộ tài liệu dù có khả năng trễ hạn."},
+    {label:"C", text:"Đánh giá mức độ quan trọng của thông tin, kiểm chứng những nội dung cốt lõi và báo nhóm nếu có nguy cơ trễ."},
+    {label:"D", text:"Không sử dụng tài liệu trên mạng vì mọi tài liệu chưa kiểm chứng đều không đáng tin."}
+  ],
+  correct: "C",
+  reason: "Cân bằng được cả ba yếu tố: thời hạn, độ chính xác và trách nhiệm với nhóm. Không phải thông tin nào cũng cần kiểm tra với mức độ giống nhau, nhưng những nội dung quan trọng cần được xác minh. Nếu có nguy cơ trễ hạn, Lan cũng cần thông báo để nhóm chủ động xử lý thay vì tự mình che giấu vấn đề."
+},
+{
+  tag: "Câu 7 · ABCD",
+  text: `Một người bạn trong nhóm thường xuyên hoàn thành công việc muộn. Lần này bạn ấy có lý do hợp lý, nhưng nếu tiếp tục chờ, cả nhóm sẽ không kịp thời hạn.
+
+Nếu là nhóm trưởng, cách xử lý nào phù hợp nhất với tính kỉ luật?`,
+  options: [
+    {label:"A", text:"Cho bạn ấy thêm thời gian vì bạn có lý do chính đáng."},
+    {label:"B", text:"Tự làm thay phần việc của bạn để đảm bảo tiến độ."},
+    {label:"C", text:"Trao đổi với bạn, xác định thời hạn thực tế và chuẩn bị phương án phân chia lại công việc nếu cần."},
+    {label:"D", text:"Báo ngay với giáo viên để bạn ấy chịu trách nhiệm về việc trễ hạn."}
+  ],
+  correct: "C",
+  reason: "C không bỏ qua hoàn cảnh của thành viên nhưng cũng không để lý do đó khiến cả nhóm mất kiểm soát tiến độ. Nhóm trưởng cần xác định thời hạn thực tế, thống nhất trách nhiệm và có phương án dự phòng. Kỉ luật trong tập thể không chỉ là yêu cầu người khác tuân thủ mà còn là tổ chức công việc một cách có trách nhiệm."
+},
+{
+  tag: "Câu 8 · Đúng / Sai",
+  text: `Một học sinh đã nhiều lần phá vỡ kế hoạch cá nhân nhưng mỗi lần đều tự đặt ra một kế hoạch mới chi tiết hơn.
+
+Nhận định: "Việc liên tục lập kế hoạch mới cho thấy học sinh đó đang rèn luyện tính kỉ luật, ngay cả khi chưa thực hiện được các kế hoạch trước."`,
+  options: [
+    {label:"Đ", text:"Đúng"},
+    {label:"S", text:"Sai"}
+  ],
+  correct: "S",
+  reason: "Lập kế hoạch chỉ là bước đầu. Tính kỉ luật còn nằm ở khả năng thực hiện và duy trì hành động theo kế hoạch. Nếu liên tục đặt ra kế hoạch mới nhưng không tìm hiểu nguyên nhân khiến kế hoạch cũ thất bại thì việc lập kế hoạch có thể chỉ tạo cảm giác đang tiến bộ mà chưa giải quyết được vấn đề thực tế."
+},
+{
+  tag: "Câu 9 · ABCD",
+  text: `Hà được giao mua một số vật dụng cho lớp. Khi đến cửa hàng, Hà phát hiện một sản phẩm trong danh sách đã hết hàng. Có một sản phẩm khác có công dụng tương tự nhưng giá cao hơn một chút.
+
+Nếu Hà tự ý mua sản phẩm thay thế, Hà có thể giải quyết được vấn đề ngay nhưng có thể vượt quá số tiền được giao.
+
+Hà nên:`,
+  options: [
+    {label:"A", text:"Mua sản phẩm thay thế vì mục tiêu cuối cùng là hoàn thành nhiệm vụ."},
+    {label:"B", text:"Không mua gì vì danh sách ban đầu không còn đầy đủ."},
+    {label:"C", text:"Liên hệ với người phụ trách để xin xác nhận trước khi thay đổi lựa chọn."},
+    {label:"D", text:"Tự bỏ thêm tiền để mua sản phẩm thay thế rồi không cần báo lại."}
+  ],
+  correct: "C",
+  reason: "Hà đang sử dụng tiền và thực hiện nhiệm vụ thay mặt cho tập thể nên không nên tự ý thay đổi một quyết định có liên quan đến ngân sách. Cách C vừa chủ động giải quyết vấn đề, vừa tôn trọng phạm vi trách nhiệm của mình. Đây là điểm quan trọng của tính kỉ luật: biết mình được quyền quyết định đến đâu."
+},
+{
+  tag: "Câu 10 · ABCD",
+  text: `Nam thường xuyên bị bạn bè rủ chơi game vào thời gian đã dành cho việc học. Nam biết mình có thể kiểm soát bản thân bằng cách tự nhắc "chỉ chơi 15 phút", nhưng nhiều lần trước đó Nam đều chơi lâu hơn dự định.
+
+Cách nào thể hiện khả năng tự quản lý tốt hơn?`,
+  options: [
+    {label:"A", text:"Tiếp tục chơi nhưng cố gắng kiểm soát thời gian tốt hơn."},
+    {label:"B", text:"Tự đặt ra một giới hạn nghiêm khắc hơn và tin rằng lần này mình sẽ thực hiện được."},
+    {label:"C", text:"Thay đổi môi trường hoặc thiết lập giới hạn cụ thể để giảm khả năng bị cuốn vào việc chơi game."},
+    {label:"D", text:"Từ bỏ hoàn toàn việc chơi game để tránh mọi cám dỗ."}
+  ],
+  correct: "C",
+  reason: "Nam đã có bằng chứng từ chính trải nghiệm của mình rằng chỉ dựa vào ý chí là chưa đủ. Cách C tạo ra một cơ chế giúp Nam kiểm soát hành vi trước khi bị cuốn vào cám dỗ. Kỉ luật không chỉ là \"cố gắng hơn\" mà còn là biết xây dựng môi trường và quy tắc giúp bản thân thực hiện được mục tiêu."
+},
+{
+  tag: "Câu tổng kết · Không tính điểm",
+  text: `Một người luôn làm đúng những gì mình đã cam kết, kể cả khi hoàn cảnh đã thay đổi đáng kể.
+
+Theo em, người đó có chắc chắn là người có tính kỉ luật cao không?`,
+  options: [
+    {label:"A", text:"Có, vì đã cam kết thì nhất định phải thực hiện."},
+    {label:"B", text:"Không, vì tính kỉ luật không cần thiết trong mọi trường hợp."},
+    {label:"C", text:"Chưa thể kết luận; cần xem người đó có biết đánh giá hoàn cảnh, điều chỉnh cam kết một cách có trách nhiệm và chủ động thông báo hay không."},
+    {label:"D", text:"Có, miễn là không vi phạm quy định của tập thể."}
+  ],
+  correct: "C",
+  reason: "Giữ cam kết là một phần quan trọng của tính kỉ luật, nhưng không phải mọi cam kết đều phải được thực hiện một cách máy móc khi hoàn cảnh thay đổi. Điều quan trọng là người đó có đánh giá được tình hình, cân nhắc hậu quả, chủ động trao đổi và chịu trách nhiệm với quyết định của mình hay không."
+}
+];
+
+const state = questions.map(()=> ({ selected:new Set(), revealed:false }));
+let current = 0;
+let soundOn = true;
+
+/* ---------- Sound (WebAudio, no external files) ---------- */
+let audioCtx = null;
+function ensureCtx(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, start, dur, type='sine', gainPeak=0.18){
+  const ctx = ensureCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, ctx.currentTime + start);
+  gain.gain.linearRampToValueAtTime(gainPeak, ctx.currentTime + start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(ctx.currentTime + start);
+  osc.stop(ctx.currentTime + start + dur + 0.05);
+}
+function playCorrect(){
+  if(!soundOn) return;
+  tone(523.25, 0, 0.14, 'triangle');
+  tone(659.25, 0.12, 0.14, 'triangle');
+  tone(783.99, 0.24, 0.22, 'triangle');
+}
+function playWrong(){
+  if(!soundOn) return;
+  tone(220, 0, 0.18, 'sawtooth', 0.12);
+  tone(196, 0.13, 0.28, 'sawtooth', 0.12);
+}
+function playClick(){
+  if(!soundOn) return;
+  tone(880, 0, 0.05, 'sine', 0.08);
+}
+function playSlide(){
+  if(!soundOn) return;
+  tone(440, 0, 0.06, 'sine', 0.06);
+  tone(660, 0.04, 0.08, 'sine', 0.05);
+}
+
+/* ---------- Rendering ---------- */
+const stage = document.getElementById('stage');
+const dotsEl = document.getElementById('dots');
+const counterEl = document.getElementById('counter');
+const progressFill = document.getElementById('progressFill');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function buildSlide(qi){
+  const q = questions[qi];
+  const slide = document.createElement('div');
+  slide.className = 'slide';
+  slide.dataset.index = qi;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const tag = document.createElement('div');
+  tag.className = 'qtag';
+  tag.textContent = q.tag;
+  card.appendChild(tag);
+
+  const text = document.createElement('div');
+  text.className = 'qtext';
+  text.textContent = q.text;
+  card.appendChild(text);
+
+  const optsWrap = document.createElement('div');
+  optsWrap.className = 'options';
+
+  q.options.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.type = 'button';
+    btn.dataset.label = opt.label;
+    btn.innerHTML = `<span class="label">${opt.label}</span><span>${opt.text}</span>`;
+    btn.addEventListener('click', ()=>{
+      if(state[qi].revealed) return;
+      playClick();
+      if(state[qi].selected.has(opt.label)) state[qi].selected.delete(opt.label);
+      else state[qi].selected.add(opt.label);
+      updateSlideVisual(qi);
+    });
+    optsWrap.appendChild(btn);
+  });
+  card.appendChild(optsWrap);
+
+  const controls = document.createElement('div');
+  controls.className = 'controls';
+
+  const revealBtn = document.createElement('button');
+  revealBtn.className = 'btn btn-reveal';
+  revealBtn.textContent = 'Hiện kết quả';
+  revealBtn.addEventListener('click', ()=>{
+    state[qi].revealed = true;
+    const isCorrect = state[qi].selected.has(q.correct) && state[qi].selected.size === 1;
+    const containsCorrect = state[qi].selected.has(q.correct);
+    if(containsCorrect) playCorrect(); else playWrong();
+    updateSlideVisual(qi);
+    updateProgress();
+  });
+  controls.appendChild(revealBtn);
+
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'btn btn-reset';
+  resetBtn.textContent = 'Làm lại';
+  resetBtn.style.display = 'none';
+  resetBtn.addEventListener('click', ()=>{
+    state[qi].revealed = false;
+    state[qi].selected.clear();
+    updateSlideVisual(qi);
+    updateProgress();
+  });
+  controls.appendChild(resetBtn);
+
+  card.appendChild(controls);
+
+  const reason = document.createElement('div');
+  reason.className = 'reason';
+  const correctOpt = q.options.find(o=>o.label===q.correct);
+  reason.innerHTML = `<div class="rtitle">✅ Đáp án đúng: ${q.correct} — ${correctOpt ? correctOpt.text : ''}</div><div>${q.reason}</div>`;
+  card.appendChild(reason);
+
+  slide.appendChild(card);
+  return slide;
+}
+
+function updateSlideVisual(qi){
+  const slide = stage.querySelector(`.slide[data-index="${qi}"]`);
+  if(!slide) return;
+  const q = questions[qi];
+  const revealed = state[qi].revealed;
+  slide.querySelectorAll('.opt').forEach(btn=>{
+    const label = btn.dataset.label;
+    const isSelected = state[qi].selected.has(label);
+    btn.classList.remove('selected','revealed-correct','revealed-wrong','revealed-unselected-correct');
+    if(revealed){
+      if(label === q.correct && isSelected) btn.classList.add('revealed-correct');
+      else if(label === q.correct && !isSelected) btn.classList.add('revealed-unselected-correct');
+      else if(label !== q.correct && isSelected) btn.classList.add('revealed-wrong');
+    } else if(isSelected){
+      btn.classList.add('selected');
+    }
+  });
+  const revealBtn = slide.querySelector('.btn-reveal');
+  const resetBtn = slide.querySelector('.btn-reset');
+  revealBtn.disabled = state[qi].selected.size === 0 || revealed;
+  revealBtn.style.display = revealed ? 'none' : '';
+  resetBtn.style.display = revealed ? '' : 'none';
+  const reason = slide.querySelector('.reason');
+  reason.classList.toggle('show', revealed);
+}
+
+function renderDots(){
+  dotsEl.innerHTML = '';
+  questions.forEach((_, i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===current ? ' active' : '') + (state[i].revealed ? ' done' : '');
+    dotsEl.appendChild(d);
+  });
+}
+
+function updateProgress(){
+  const done = state.filter(s=>s.revealed).length;
+  progressFill.style.width = (done/questions.length*100) + '%';
+  counterEl.textContent = `${current+1} / ${questions.length}`;
+  renderDots();
+  prevBtn.disabled = current === 0;
+  nextBtn.textContent = current === questions.length - 1 ? 'Hoàn tất ✓' : 'Tiếp →';
+  nextBtn.disabled = current === questions.length - 1 && state[current].revealed === false && false; // always allow
+}
+
+function goTo(index){
+  if(index < 0 || index >= questions.length) return;
+  const prevSlide = stage.querySelector('.slide.active');
+  if(prevSlide) prevSlide.classList.remove('active');
+  let slide = stage.querySelector(`.slide[data-index="${index}"]`);
+  if(!slide){
+    slide = buildSlide(index);
+    stage.appendChild(slide);
+    updateSlideVisual(index);
+  }
+  requestAnimationFrame(()=>{
+    slide.classList.add('active');
+  });
+  current = index;
+  playSlide();
+  updateProgress();
+}
+
+prevBtn.addEventListener('click', ()=> goTo(current - 1));
+nextBtn.addEventListener('click', ()=>{
+  if(current === questions.length - 1){
+    // wrap to first or just stay; here we do nothing special, just flash
+    return;
+  }
+  goTo(current + 1);
+});
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'ArrowRight') goTo(current + 1);
+  if(e.key === 'ArrowLeft') goTo(current - 1);
+});
+
+const soundToggle = document.getElementById('soundToggle');
+soundToggle.addEventListener('click', ()=>{
+  soundOn = !soundOn;
+  soundToggle.textContent = soundOn ? '🔊' : '🔇';
+  if(soundOn) ensureCtx();
+});
+
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', ()=>{
+  const root = document.documentElement;
+  const cur = root.getAttribute('data-theme');
+  if(cur === 'dark'){ root.setAttribute('data-theme','light'); }
+  else if(cur === 'light'){ root.removeAttribute('data-theme'); }
+  else { root.setAttribute('data-theme','dark'); }
+});
+
+/* init */
+goTo(0);
+</script>
+</body>
+</html>
